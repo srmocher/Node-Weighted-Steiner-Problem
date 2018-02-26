@@ -87,8 +87,11 @@ def iterate_steiner(graph,trees):
             min_node = graph_node
     return min_node,min_subset_trees
 
+
 def merge_node_trees(graph,node,trees,subset):
     print("Merging selected node with subset of trees along shortest path from that node")
+    
+
 
 def approximate_steiner(graph,terminals):
     trees = []
