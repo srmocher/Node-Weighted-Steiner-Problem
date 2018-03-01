@@ -54,12 +54,12 @@ def compute_quotient_cost(graph,trees,node):
         distances.append(pair)
 
     # sort distances from node to all trees and then take subsets of trees
-    distances.sort(key=lambda x:x.dist)
+    distances.sort(key=lambda x:x['distance'])
 
     # compute min cost node spider ratio - consider subsets of atleast size 2
     subset = trees[0:2]
-
-    min_spider_ratio = (node['weight'] + distances[0]['distance'] + distances[0]['distance'])/2
+    weights = nx.get_node_attributes(graph,'weight')
+    min_spider_ratio = (weights[node] + distances[0]['distance'] + distances[0]['distance'])/2
     min_subset = subset
     i = 2
     while i < len(trees):
@@ -67,7 +67,7 @@ def compute_quotient_cost(graph,trees,node):
         tree_distance = 0
         for j in range(0,i+1):
             tree_distance = tree_distance + distances[i]['distance']
-        spider_ratio = (node['weight'] + tree_distance)/i
+        spider_ratio = (weights[node] + tree_distance)/i
         if spider_ratio < min_spider_ratio:
             min_spider_ratio = spider_ratio
             min_subset = subset
@@ -113,3 +113,6 @@ def approximate_steiner(graph,terminals):
     while len(trees) > 1:
         node,subset_trees = iterate_steiner(graph,trees)
         trees = merge_node_trees(graph,node,trees,subset_trees)
+
+    return trees[0]
+
