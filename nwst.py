@@ -71,6 +71,7 @@ def compute_quotient_cost(graph,trees,node):
         if spider_ratio < min_spider_ratio:
             min_spider_ratio = spider_ratio
             min_subset = subset
+        i += 1
 
     return min_subset,min_spider_ratio
 
