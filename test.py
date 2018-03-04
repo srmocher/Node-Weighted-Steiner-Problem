@@ -1,5 +1,6 @@
 import nwst
 import networkx as nx
+import networkx.algorithms.tree as t
 
 # converting set cover example given here
 # (https://www.geeksforgeeks.org/set-cover-problem-set-1-greedy-approximate-algorithm/)
@@ -26,4 +27,6 @@ test_graph.add_edge('S3',4)
 
 terminals = [1,2,3,4,5]
 steiner_tree,steiner_cost = nwst.approximate_steiner(test_graph,terminals)
+if t.is_tree(steiner_tree):
+    print("Is a tree")
 print(steiner_cost)
