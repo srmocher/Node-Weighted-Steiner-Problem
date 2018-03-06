@@ -54,7 +54,6 @@ def approx_steiner(graph,terminals):
         if check_terminals_connected(steiner_tree,terminals):
             break
 
-    cycles = list()
     while True:
         try:
             cycle = nx.find_cycle(steiner_tree)
