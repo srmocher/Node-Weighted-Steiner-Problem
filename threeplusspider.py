@@ -30,8 +30,48 @@ def check_path_exists(paths,path):
     return False
 
 
-def contract_spider(graph,spider):
+def make_terminals_degree_one(graph,terminals):
+    print('Converting graph to one with terminals with all degree 1 and return modified graph and terminal set')
+    t = list(terminals)
+    nodes = list(graph.nodes)
+    edges = list(graph.edges)
+    i = 0
+    for node in nodes:
+        if node in terminals and graph.degree[node] > 1:
+            graph.add_node('temp'+str(i))
+            terminals.append('temp'+str(i))
+            graph.add_edge(node,'temp'+str(i))
+            for edge in edges:
+                if edge[0] == node:
+                    graph.remove_edge(edge)
+                    graph.add_edge('temp'+str(i),edge[1])
+                elif edge[1]==node:
+                    graph.remove_edge(edge)
+                    graph.add_edge('temp'+str(i),edge[0])
+            i += 1
+
+    return graph,terminals
+
+
+def contract_spider(graph,center,subset,remaining,terminals):
     print('Contracting spider...')
+    g = nx.Graph(incoming_graph_data=graph)
+    for tree in subset:
+        path,cost = nwst.get_node_tree_distance(graph,tree,center)
+        for node in path:
+            g = nx.contracted_nodes(graph,center,node,self_loops=False)
+
+    graph,terminals = make_terminals_degree_one(g,terminals)
+    nodes = list(graph.nodes)
+    trees = list()
+    for node in nodes:
+        if graph.degree[node] == 1:
+            tree = nx.Graph()
+            tree.add_node(node)
+            trees.append(tree)
+
+    return graph,trees
+
 
 def get_path_cost(graph,path):
     cost  = 0
@@ -65,7 +105,8 @@ def approximate_steiner(graph,terminals):
         tree.add_node(terminal)
         trees.append(tree)
 
-    while len(trees) > 2:
+    n_i = len(terminals)
+    while n_i > 2:
         node, remaining_trees, subset_trees,min_ratio =  nwst.iterate_steiner(graph,trees)
         if graph.degree[node] >=3:
             print('Found 3+ spider')
@@ -98,7 +139,7 @@ def approximate_steiner(graph,terminals):
             for path in distinct_paths:
                 cost_T = cost_T + get_path_cost(graph,path)
 
-            term_1 = cost_T/(-math.log(1 - L_i/len(trees)))
+            term_1 = cost_T/(-math.log(1 - L_i/n_i))
             term_2 = 2*len(trees)*min_ratio
             term_3 = 1.5*len(trees)*min_three_plus_spider_ratio
 
