@@ -1,5 +1,6 @@
 import networkx as nx
 import random
+import matplotlib.pyplot as plt
 
 
 def generate_graph(num_vertices,a,b):
@@ -63,6 +64,7 @@ def get_node_tree_distance(graph,tree,node):
     tree_nodes = list(tree.nodes)
     min_cost = float("inf")
     min_path = None
+    print("Finding node "+str(node)+" to tree distance")
     for tree_node in tree_nodes:
         paths = list(nx.all_simple_paths(graph,node,tree_node))
         path,cost = get_path_least_cost(graph,paths,node,tree_node)
@@ -101,9 +103,11 @@ def compute_quotient_cost(graph,trees,node):
     min_spider_ratio = (weights[node] + distances[0]['distance'] + distances[1]['distance'])/2
     min_subset = list(subset)
     i = 2
-    remaining_trees = trees[2:len(trees)]
+    remaining_trees = list()
+    for k in range(2,len(trees)):
+        remaining_trees.append(distances[k]['tree'])
     while i < len(trees):
-        subset.append(trees[i])
+        subset.append(distances[i]['tree'])
         tree_distance = 0
         for j in range(0,i+1):
             tree_distance = tree_distance + distances[j]['distance']
@@ -111,7 +115,9 @@ def compute_quotient_cost(graph,trees,node):
         if spider_ratio <= min_spider_ratio:
             min_spider_ratio = spider_ratio
             min_subset = list(subset)
-            remaining_trees = list(trees[i+1:len(trees)])
+            remaining_trees = []
+            for k in range(i+1,len(trees)):
+                remaining_trees.append(distances[k]['tree'])
         i += 1
 
     return min_subset,remaining_trees,min_spider_ratio
@@ -133,9 +139,9 @@ def iterate_steiner(graph,trees):
         subset,remaining_trees,ratio = compute_quotient_cost(graph,trees,graph_node)
         if ratio < min_ratio:
             min_ratio = ratio
-            min_subset_trees = subset
+            min_subset_trees = list(subset)
             min_node = graph_node
-            min_remaining_trees = remaining_trees
+            min_remaining_trees = list(remaining_trees)
     return min_node,min_remaining_trees,min_subset_trees,min_ratio
 
 
@@ -165,6 +171,12 @@ def merge_node_trees(graph,node,subset,remaining_trees):
     return merged_trees
 
 
+def draw_trees(trees):
+    for tree in trees:
+        nx.draw(tree,with_labels=True)
+    plt.show()
+
+
 def approximate_steiner(graph,terminals):
     """
     Approximate minimum node-weighted steiner tree for terminal set 'terminals' in input graph
@@ -178,8 +190,9 @@ def approximate_steiner(graph,terminals):
         gr.add_node(node)
         trees.append(gr)
 
+
     while len(trees) > 1:
-        node,remaining_trees,subset_trees,min_ration = iterate_steiner(graph,trees)
+        node,remaining_trees,subset_trees,min_ratio = iterate_steiner(graph,trees)
         print("Select node to be merged is "+str(node)+" with subset size "+str(len(subset_trees)))
         trees = merge_node_trees(graph,node,subset_trees,remaining_trees)
 
@@ -188,5 +201,9 @@ def approximate_steiner(graph,terminals):
     weights = nx.get_node_attributes(graph,'weight')
     for node in list(steiner_tree.nodes):
         steiner_cost = steiner_cost + weights[node]
+
+    for terminal in terminals:
+        if terminal not in list(steiner_tree.nodes):
+            print('Failed!!!')
     return trees[0],steiner_cost
 

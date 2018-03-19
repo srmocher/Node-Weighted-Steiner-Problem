@@ -43,6 +43,11 @@ class NWSTLPSolver:
         print("The status : "+LpStatus[self.ilp.status])
         print(self.ilp)
         print("The objective value is "+str(self.ilp.objective.value()))
+        variables= self.ilp.variables()
+        for variable in variables:
+            if variable.varValue == 1:
+                print(variable)
+        return self.ilp.objective.value()
 
 
 
