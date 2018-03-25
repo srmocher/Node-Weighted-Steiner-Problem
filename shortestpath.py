@@ -1,4 +1,5 @@
 import networkx as nx
+import networkx.algorithms.components as comp
 
 
 def get_paths(graph,source,target):
@@ -28,14 +29,17 @@ def check_terminals_connected(tree,terminals):
     num_terminals = len(terminals)
     for i in range(0,num_terminals):
         for j in range(i+1,num_terminals):
-            paths = nx.all_simple_paths(tree,terminals[i],terminals[j])
-            if paths is None or len(paths)==0:
+            try:
+                paths = nx.all_simple_paths(tree,terminals[i],terminals[j])
+                if (paths is None):
+                    return False
+            except:
                 return False
 
     return True
 
 
-def approx_steiner(graph,terminals):
+def approximate_steiner(graph,terminals):
     steiner_tree = nx.Graph()
     num_terminals = len(terminals)
     all_terminal_paths = list()
@@ -46,19 +50,35 @@ def approx_steiner(graph,terminals):
             path = dict()
             path['cost'] = least_cost
             path['path'] = least_cost_path
+            print "Path" + str(path['path'])
             all_terminal_paths.append(path)
 
-    all_terminal_paths.sort(lambda x:x['cost'])
+    all_terminal_paths.sort(key=lambda x:x['cost'])
     for t_path in all_terminal_paths:
-        steiner_tree.add_path(t_path)
+        steiner_tree.add_path(t_path['path'])
         if check_terminals_connected(steiner_tree,terminals):
             break
-
+    conn_components = list(comp.connected_components(steiner_tree))
+    while len(conn_components) > 1:
+        comp1 = conn_components[0]
+        comp2 = conn_components[1];
+        for j in range(0,len(comp1)):
+            for k in range(0,len(comp2)):
+                if graph.has_edge(comp1[j],comp2[k]):
+                    steiner_tree.add_edge(comp1[j],comp2[k])
+                    break
+        conn_components = list(comp.connected_components(steiner_tree))
+        
     while True:
         try:
             cycle = nx.find_cycle(steiner_tree)
+            print('Cycle found')
             edge = cycle[0]
             steiner_tree.remove_edge(edge[0],edge[1])
         except:
             break
-    return steiner_tree
+    weights = nx.get_node_attributes(graph,'weight')
+    steiner_cost = 0
+    for node in list(steiner_tree.nodes):
+        steiner_cost = steiner_cost + weights[node]
+    return steiner_tree,steiner_cost

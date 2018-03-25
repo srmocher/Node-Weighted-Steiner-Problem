@@ -7,14 +7,17 @@ def check_terminals_connected(tree,terminals):
     num_terminals = len(terminals)
     for i in range(0,num_terminals):
         for j in range(i+1,num_terminals):
-            paths = nx.all_simple_paths(tree,terminals[i],terminals[j])
-            if paths is None or len(paths)==0:
+            try:
+                paths = list(nx.all_simple_paths(tree,terminals[i],terminals[j]))
+                if paths is None or len(paths)==0:
+                    return False
+            except: 
                 return False
 
     return True
 
 
-def approx_steiner(graph,terminals):
+def approximate_steiner(graph,terminals):
     steiner_tree = nx.Graph()
     for terminal in terminals:
         steiner_tree.add_node(terminal)
@@ -41,16 +44,16 @@ def approx_steiner(graph,terminals):
         return steiner_tree
 
     # Sort non-terminal nodes by weight
-    steiner_nodes.sort(lambda x:x['weight'])
+    steiner_nodes.sort(key=lambda x:x['weight'])
 
     for steiner_node in steiner_nodes:
         current_nodes = list(steiner_tree.nodes)
-        steiner_tree.add_node(steiner_node)
+        steiner_tree.add_node(steiner_node['node'])
 
         # Add any edges between the selected node and existing nodes
         for current_node in current_nodes:
-            if graph.has_edge(steiner_node,current_node):
-                steiner_tree.add_edge(steiner_node,current_node)
+            if graph.has_edge(steiner_node['node'],current_node):
+                steiner_tree.add_edge(steiner_node['node'],current_node)
         if check_terminals_connected(steiner_tree,terminals):
             break
 
@@ -63,7 +66,11 @@ def approx_steiner(graph,terminals):
         except:
             break
 
-    return steiner_tree
+    steiner_cost = 0
+    weights = nx.get_node_attributes(graph,'weight')
+    for node in list(steiner_tree.nodes):
+        steiner_cost = steiner_cost + weights[node] 
+    return steiner_tree, steiner_cost
 
 
 

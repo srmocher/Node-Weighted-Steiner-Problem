@@ -64,7 +64,7 @@ def get_node_tree_distance(graph,tree,node):
     tree_nodes = list(tree.nodes)
     min_cost = float("inf")
     min_path = None
-    print("Finding node "+str(node)+" to tree distance")
+    #print("Finding node "+str(node)+" to tree distance")
     for tree_node in tree_nodes:
         paths = list(nx.all_simple_paths(graph,node,tree_node))
         path,cost = get_path_least_cost(graph,paths,node,tree_node)
@@ -154,7 +154,7 @@ def merge_node_trees(graph,node,subset,remaining_trees):
     :param remaining_trees: trees which were not merged
     :return: set of all trees after merging
     """
-    print("Merging selected node with subset of trees along shortest path from that node")
+    #print("Merging selected node with subset of trees along shortest path from that node")
     merged_trees = list()
     merged_tree = nx.Graph()
     for tree in subset:
@@ -193,7 +193,7 @@ def approximate_steiner(graph,terminals):
 
     while len(trees) > 1:
         node,remaining_trees,subset_trees,min_ratio = iterate_steiner(graph,trees)
-        print("Select node to be merged is "+str(node)+" with subset size "+str(len(subset_trees)))
+        #print("Select node to be merged is "+str(node)+" with subset size "+str(len(subset_trees)))
         trees = merge_node_trees(graph,node,subset_trees,remaining_trees)
 
     steiner_tree = trees[0]
