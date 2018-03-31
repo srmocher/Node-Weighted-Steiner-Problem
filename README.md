@@ -1,5 +1,5 @@
 # CSC620-Steiner
-Multi-level Node weighted Steiner trees - implementation of heuristics to compute them
+Multi-level Node weighted Steiner trees - implementation of heuristics to compute them. The dependencies to run the code are Python 2.7/NetworkX/Matplotlib/PuLP.
 
 ## 1. A logarithmic bound heuristic (H3)
 Extending below O(logn) approximation to multi-level graph representation with nested terminal sets.
@@ -29,7 +29,7 @@ https://www.sciencedirect.com/science/article/pii/S0890540198927547
 ## Files
 `greedy.py` - Implements H2 for single level
 
-`nwst.py` - Implements H3 for single level
+`nwst.py` - Implements H3 for single level. To run, import this module in code and call `approximate_steiner` with the input graph and list of terminals as inputs. It returns the steiner tree and its cost.
 
 `threeplusspider.py` - Implements H4 for single level
 

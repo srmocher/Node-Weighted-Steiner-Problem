@@ -100,6 +100,8 @@ def compute_quotient_cost(graph,trees,node):
     subset.append(distances[1]['tree'])
 
     weights = nx.get_node_attributes(graph,'weight')
+    if node not in weights:
+        print('Found')
     min_spider_ratio = (weights[node] + distances[0]['distance'] + distances[1]['distance'])/2
     min_subset = list(subset)
     i = 2
@@ -202,8 +204,5 @@ def approximate_steiner(graph,terminals):
     for node in list(steiner_tree.nodes):
         steiner_cost = steiner_cost + weights[node]
 
-    for terminal in terminals:
-        if terminal not in list(steiner_tree.nodes):
-            print('Failed!!!')
     return trees[0],steiner_cost
 
