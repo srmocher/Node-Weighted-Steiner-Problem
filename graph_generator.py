@@ -5,11 +5,11 @@ import random
 
 def generate_multi_level_graph(n,w_min,w_max,levels,graph_type,params):
     graph = None
-    if graph_type == 0:
+    if graph_type == "watts-strogatz":
         graph = nx.connected_watts_strogatz_graph(n,params['neighbors'],params['prob'],params['tries'])
-    elif graph_type == 1:
+    elif graph_type == "erdos-renyi":
         graph = nx.erdos_renyi_graph(n,params['prob'],params['seed'])
-    elif graph_type == 2:
+    elif graph_type == "barabasi-albert":
         graph = nx.barabasi_albert_graph(n,params['m'])
 
     terminal_sets = list()
@@ -22,5 +22,6 @@ def generate_multi_level_graph(n,w_min,w_max,levels,graph_type,params):
         terminal_sets.append(list(terminals))
         terminals.pop(random.randint(0,len(terminals)-1))
 
+    terminal_sets.reverse()
     return graph,terminal_sets
 

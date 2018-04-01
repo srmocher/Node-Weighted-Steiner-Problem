@@ -38,7 +38,6 @@ class NWSTLPSolver:
             self.ilp.addConstraint(constraint)
 
     def solve_ilp(self):
-#        self.ilp.writeLP("nwst.lp")
         self.ilp.solve()
         print("The status : "+LpStatus[self.ilp.status])
         print(self.ilp)

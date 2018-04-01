@@ -3,9 +3,9 @@ import nwst
 
 
 class MultiLevelGraph:
-    def __init__(self,graph,levels):
+    def __init__(self,graph,terminal_sets,levels):
         self.levels = levels
-        self.terminal_sets = list()
+        self.terminal_sets = terminal_sets
         self.graph = graph
         self.steiner_trees = list()
         self.steiner_costs = list()
