@@ -6,6 +6,7 @@ import random
 import matplotlib.pyplot as plt
 import math
 from networkx.drawing.nx_agraph import write_dot
+import pygraphviz
 
 # converting set cover example given here
 # (https://www.geeksforgeeks.org/set-cover-problem-set-1-greedy-approximate-algorithm/)
@@ -52,7 +53,8 @@ plt.figure()
 nx.draw(test_graph,with_labels=True)
 #plt.show()
 print('The terminals are '+str(terminals))
-steiner_tree,steiner_cost = nwst.approximate_steiner(test_graph,terminals)
+weights = nx.get_node_attributes(test_graph,'weight')
+steiner_tree,steiner_cost = nwst.approximate_steiner(test_graph,terminals,weights)
 plt.figure()
 nx.draw(steiner_tree,with_labels=True)
 plt.show()

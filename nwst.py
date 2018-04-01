@@ -1,24 +1,8 @@
 import networkx as nx
-import random
 import matplotlib.pyplot as plt
 
 
-def generate_graph(num_vertices,a,b):
-    """
-    Generates a complete undirected graph with num_vertices vertices and node weights in the range [a,b)
-    :param num_vertices: Number of vertices in the complete graph
-    :param a: lower bound for node weight
-    :param b: upper bound for node weight
-    :return: A complete graph
-    """
-    graph = nx.complete_graph(num_vertices)
-    nodes = list(graph.nodes)
-    for node in nodes:
-        graph.nodes[node]['weight'] = random.uniform(a,b)
-    return graph
-
-
-def get_path_cost(graph,path,source,target):
+def get_path_cost(graph,path,source,target,weights):
     """
     Gets the cost of the path 'path' excluding the cost of the endpoints in the patg
     :param graph: input graph
@@ -30,11 +14,11 @@ def get_path_cost(graph,path,source,target):
     cost = 0
     for node in path:
         if node is not source and node is not target:
-            cost = cost + graph.nodes[node]['weight']
+            cost = cost + weights[node]
     return cost
 
 
-def get_path_least_cost(graph,paths,source,target):
+def get_path_least_cost(graph,paths,source,target,weights):
     """
     Gets path of least cost from all paths in 'paths'
     :param graph: input graph
@@ -46,14 +30,14 @@ def get_path_least_cost(graph,paths,source,target):
     min_cost = float("inf")
     min_path = None
     for path in paths:
-        cost = get_path_cost(graph,path,source,target)
+        cost = get_path_cost(graph,path,source,target,weights)
         if cost < min_cost:
             min_cost = cost
             min_path = path
     return min_path,min_cost
 
 
-def get_node_tree_distance(graph,tree,node):
+def get_node_tree_distance(graph,tree,node,weights):
     """
     Get min distance between node 'node' and any node in tree 'tree'
     :param graph: input undirected graph
@@ -67,7 +51,7 @@ def get_node_tree_distance(graph,tree,node):
     #print("Finding node "+str(node)+" to tree distance")
     for tree_node in tree_nodes:
         paths = list(nx.all_simple_paths(graph,node,tree_node))
-        path,cost = get_path_least_cost(graph,paths,node,tree_node)
+        path,cost = get_path_least_cost(graph,paths,node,tree_node,weights)
         if cost < min_cost:
             min_cost = cost
             min_path = path
@@ -75,7 +59,7 @@ def get_node_tree_distance(graph,tree,node):
     return min_path,min_cost
 
 
-def compute_quotient_cost(graph,trees,node):
+def compute_quotient_cost(graph,trees,node,weights):
     """
     Compute quotient cost (spider ratio) for vertex 'node' in the graph with respect to the set of trees 'trees'
     :param graph: input graph
@@ -85,7 +69,7 @@ def compute_quotient_cost(graph,trees,node):
     """
     distances = []
     for tree in trees:
-        path,cost = get_node_tree_distance(graph,tree,node)
+        path,cost = get_node_tree_distance(graph,tree,node,weights)
         pair = {}
         pair['tree'] = tree
         pair['distance'] = cost
@@ -99,7 +83,7 @@ def compute_quotient_cost(graph,trees,node):
     subset.append(distances[0]['tree'])
     subset.append(distances[1]['tree'])
 
-    weights = nx.get_node_attributes(graph,'weight')
+    #weights = nx.get_node_attributes(graph,'weight')
     if node not in weights:
         print('Found')
     min_spider_ratio = (weights[node] + distances[0]['distance'] + distances[1]['distance'])/2
@@ -125,7 +109,7 @@ def compute_quotient_cost(graph,trees,node):
     return min_subset,remaining_trees,min_spider_ratio
 
 
-def iterate_steiner(graph,trees):
+def iterate_steiner(graph,trees,weights):
     """
     Runs an iteration of the approximation algorithm
     :param graph: input graph
@@ -138,7 +122,7 @@ def iterate_steiner(graph,trees):
     min_subset_trees = None
     min_remaining_trees = None
     for graph_node in graph_nodes:
-        subset,remaining_trees,ratio = compute_quotient_cost(graph,trees,graph_node)
+        subset,remaining_trees,ratio = compute_quotient_cost(graph,trees,graph_node,weights)
         if ratio < min_ratio:
             min_ratio = ratio
             min_subset_trees = list(subset)
@@ -147,7 +131,7 @@ def iterate_steiner(graph,trees):
     return min_node,min_remaining_trees,min_subset_trees,min_ratio
 
 
-def merge_node_trees(graph,node,subset,remaining_trees):
+def merge_node_trees(graph,node,subset,remaining_trees,weights):
     """
     Merges the node with trees in the subset along paths with lowest cost
     :param graph: input graph
@@ -160,7 +144,7 @@ def merge_node_trees(graph,node,subset,remaining_trees):
     merged_trees = list()
     merged_tree = nx.Graph()
     for tree in subset:
-        min_path,min_cost = get_node_tree_distance(graph,tree,node)
+        min_path,min_cost = get_node_tree_distance(graph,tree,node,weights)
         merged_tree.add_path(min_path)
         for curr_node in list(tree.nodes):
             merged_tree.add_node(curr_node)
@@ -179,7 +163,7 @@ def draw_trees(trees):
     plt.show()
 
 
-def approximate_steiner(graph,terminals):
+def approximate_steiner(graph,terminals,weights):
     """
     Approximate minimum node-weighted steiner tree for terminal set 'terminals' in input graph
     :param graph: input graph
@@ -194,13 +178,13 @@ def approximate_steiner(graph,terminals):
 
 
     while len(trees) > 1:
-        node,remaining_trees,subset_trees,min_ratio = iterate_steiner(graph,trees)
+        node,remaining_trees,subset_trees,min_ratio = iterate_steiner(graph,trees,weights)
         #print("Select node to be merged is "+str(node)+" with subset size "+str(len(subset_trees)))
-        trees = merge_node_trees(graph,node,subset_trees,remaining_trees)
+        trees = merge_node_trees(graph,node,subset_trees,remaining_trees,weights)
 
     steiner_tree = trees[0]
     steiner_cost = 0
-    weights = nx.get_node_attributes(graph,'weight')
+    #weights = nx.get_node_attributes(graph,'weight')
     for node in list(steiner_tree.nodes):
         steiner_cost = steiner_cost + weights[node]
 
