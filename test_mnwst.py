@@ -1,17 +1,23 @@
 import graph_generator as gg
 import mnwst
 from simplegexf import Gexf, Edge
+import matplotlib.pyplot as plt
+import networkx as nx
 
 
 params = dict()
-params['prob']=0.48
-params['neighbors']=3
-params['tries']=100
+# params['prob']=0.48
+# params['neighbors']=2
+# params['tries']=100
+params['m'] = 1
 levels = 3
-ml_graph, terminal_sets = gg.generate_multi_level_graph(n=20,w_min=2,w_max=10,levels=levels,graph_type="watts-strogatz",params=params)
+ml_graph, terminal_sets = gg.generate_multi_level_graph(n=10,w_min=2,w_max=10,levels=levels,graph_type="barabasi-albert",params=params)
+gg.write_to_file(ml_graph,terminal_sets,levels,"test.txt")
 multi_level_instance = mnwst.MultiLevelGraph(ml_graph,levels=levels,terminal_sets=terminal_sets)
-multi_level_instance.approximate_steiner()
+multi_level_instance.approximate_steiner_top_down()
 steiner_trees,steiner_costs = multi_level_instance.get_steiner_trees()
+# nx.draw(steiner_trees[0])
+# plt.show()
 # gfx = gexf.Gexf("Sridhar","CSC 620 graph")
 # gexf_graph = gfx.addGraph("undirected","dynamic","NWST")
 # gexf_graph.addNode("0","hello")

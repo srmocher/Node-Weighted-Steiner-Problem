@@ -1,6 +1,14 @@
 import networkx as nx
-import matplotlib.pyplot as plt
+import networkx.algorithms as alg
+import time
+import networkx.algorithms.shortest_paths as sp
 
+
+
+di_graph = None
+all_distances = None
+all_predecessors = None
+all_paths = None
 
 def get_path_cost(graph,path,source,target,weights):
     """
@@ -11,6 +19,8 @@ def get_path_cost(graph,path,source,target,weights):
     :param target: other endpoint in the path
     :return: Cost of path 'path' in input graph
     """
+    if path is None:
+        return float("inf")
     cost = 0
     for node in path:
         if node is not source and node is not target:
@@ -45,13 +55,31 @@ def get_node_tree_distance(graph,tree,node,weights):
     :param node: A node in the input graph
     :return: Get min distance between node and any node in tree along with the path
     """
+    global di_graph,all_predecessors,all_paths
     tree_nodes = list(tree.nodes)
     min_cost = float("inf")
     min_path = None
+
     #print("Finding node "+str(node)+" to tree distance")
     for tree_node in tree_nodes:
-        paths = list(nx.all_simple_paths(graph,node,tree_node))
-        path,cost = get_path_least_cost(graph,paths,node,tree_node,weights)
+        # paths = list(nx.shortest_simple_paths(graph,node,tree_node))
+        # path,cost = get_path_least_cost(graph,paths,node,tree_node,weights)
+        path1 = alg.shortest_path(di_graph,node,tree_node,weight='weight')
+        path2 = alg.shortest_path(di_graph,tree_node,node,weight='weight')
+        cost1 = get_path_cost(graph,path1,node,tree_node,weights)
+        cost2 = get_path_cost(graph,path2,tree_node,node,weights)
+        # # path1 = get_path(node,tree_node)
+        # path2 = get_path(tree_node,node)
+        # path1 = all_paths[node][tree_node]
+        # path2 = all_paths[tree_node][node]
+        # cost1 = get_path_cost(graph,path1,node,tree_node,weights)
+        #cost2 = get_path_cost(graph,path2,tree_node,node,weights)
+        if cost1 < cost2:
+            cost = cost1
+            path = path1
+        else:
+            cost = cost2
+            path = path2
         if cost < min_cost:
             min_cost = cost
             min_path = path
@@ -84,8 +112,7 @@ def compute_quotient_cost(graph,trees,node,weights):
     subset.append(distances[1]['tree'])
 
     #weights = nx.get_node_attributes(graph,'weight')
-    if node not in weights:
-        print('Found')
+
     min_spider_ratio = (weights[node] + distances[0]['distance'] + distances[1]['distance'])/2
     min_subset = list(subset)
     i = 2
@@ -131,6 +158,13 @@ def iterate_steiner(graph,trees,weights):
     return min_node,min_remaining_trees,min_subset_trees,min_ratio
 
 
+def check_cycle(graph):
+    try:
+        alg.find_cycle(graph)
+        return True
+    except:
+        return False
+
 def merge_node_trees(graph,node,subset,remaining_trees,weights):
     """
     Merges the node with trees in the subset along paths with lowest cost
@@ -151,17 +185,41 @@ def merge_node_trees(graph,node,subset,remaining_trees,weights):
         for curr_edge in list(tree.edges):
             merged_tree.add_edge(curr_edge[0],curr_edge[1])
 
+    # Remove any cycles created by merging trees into one
+    cycle_exists = True
+    while cycle_exists:
+        try:
+             cycle = alg.find_cycle(merged_tree)
+             edge = cycle[0]
+             merged_tree.remove_edge(edge[0],edge[1])
+        except:
+            cycle_exists = False
+
     merged_trees.append(merged_tree)
     for tree in remaining_trees:
         merged_trees.append(tree)
     return merged_trees
 
 
-def draw_trees(trees):
-    for tree in trees:
-        nx.draw(tree,with_labels=True)
-    plt.show()
+def preprocess_graph(graph,weights):
+    global di_graph, all_predecessors, all_distances, all_paths
+    di_graph = nx.DiGraph()
+    for edge in list(graph.edges):
+        di_graph.add_edge(edge[0], edge[1], weight=weights[edge[1]])
+        di_graph.add_edge(edge[1], edge[0], weight=weights[edge[0]])
 
+    print('Computing oracle by preprocessing digraph')
+    # all_predecessors,all_distances = sp.floyd_warshall_predecessor_and_distance(di_graph)
+    # all_predecessors = dict(all_predecessors)
+    # all_distances = dict(all_distances)
+    start = time.time()
+    all_paths = sp.johnson(di_graph, weight='weight')
+    end = time.time()
+
+    elapsed = end - start
+    print('Time taken in seconds to process graph ' + str(elapsed))
+
+    print('Finished computing APSP')
 
 def approximate_steiner(graph,terminals,weights):
     """
@@ -170,6 +228,10 @@ def approximate_steiner(graph,terminals,weights):
     :param terminals: set of vertices, subset of vertices in input
     :return: The approximation of the minimum Steiner tree
     """
+
+
+    print('Computing steiner tree')
+    start = time.time()
     trees = []
     for node in terminals:
         gr = nx.Graph()
@@ -181,12 +243,29 @@ def approximate_steiner(graph,terminals,weights):
         node,remaining_trees,subset_trees,min_ratio = iterate_steiner(graph,trees,weights)
         #print("Select node to be merged is "+str(node)+" with subset size "+str(len(subset_trees)))
         trees = merge_node_trees(graph,node,subset_trees,remaining_trees,weights)
+        # for tree in trees:
+        #     try:
+        #         if alg.find_cycle(tree):
+        #             print("Cycle exists")
+        #     except:
+        #         pass
 
     steiner_tree = trees[0]
     steiner_cost = 0
     #weights = nx.get_node_attributes(graph,'weight')
     for node in list(steiner_tree.nodes):
         steiner_cost = steiner_cost + weights[node]
-
-    return trees[0],steiner_cost
+    # try:
+    #     alg.find_cycle(steiner_tree)
+    # except:
+    #     print('No cycle')
+    #
+    # for i in range(len(terminals)):
+    #     for j in range(i+1,len(terminals)):
+    #         if not nx.has_path(steiner_tree,terminals[i],terminals[j]):
+    #             print('Error')
+    end = time.time()
+    elapsed =  end - start
+    print ('Computed steiner tree in '+str(elapsed)+' seconds')
+    return steiner_tree,steiner_cost
 
