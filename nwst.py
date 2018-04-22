@@ -64,16 +64,16 @@ def get_node_tree_distance(graph,tree,node,weights):
     for tree_node in tree_nodes:
         # paths = list(nx.shortest_simple_paths(graph,node,tree_node))
         # path,cost = get_path_least_cost(graph,paths,node,tree_node,weights)
-        path1 = alg.shortest_path(di_graph,node,tree_node,weight='weight')
-        path2 = alg.shortest_path(di_graph,tree_node,node,weight='weight')
-        cost1 = get_path_cost(graph,path1,node,tree_node,weights)
-        cost2 = get_path_cost(graph,path2,tree_node,node,weights)
+        # path1 = alg.shortest_path(di_graph,node,tree_node,weight='weight')
+        # path2 = alg.shortest_path(di_graph,tree_node,node,weight='weight')
+        # cost1 = get_path_cost(graph,path1,node,tree_node,weights)
+        # cost2 = get_path_cost(graph,path2,tree_node,node,weights)
         # # path1 = get_path(node,tree_node)
         # path2 = get_path(tree_node,node)
-        # path1 = all_paths[node][tree_node]
-        # path2 = all_paths[tree_node][node]
-        # cost1 = get_path_cost(graph,path1,node,tree_node,weights)
-        #cost2 = get_path_cost(graph,path2,tree_node,node,weights)
+        path1 = all_paths[node][tree_node]
+        path2 = all_paths[tree_node][node]
+        cost1 = get_path_cost(graph,path1,node,tree_node,weights)
+        cost2 = get_path_cost(graph,path2,tree_node,node,weights)
         if cost1 < cost2:
             cost = cost1
             path = path1
