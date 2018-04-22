@@ -2,6 +2,7 @@ import networkx as nx
 import networkx.algorithms as alg
 import time
 import networkx.algorithms.shortest_paths as sp
+from operator import attrgetter,itemgetter
 
 
 
@@ -9,6 +10,7 @@ di_graph = None
 all_distances = None
 all_predecessors = None
 all_paths = None
+
 
 def get_path_cost(graph,path,source,target,weights):
     """
@@ -104,7 +106,7 @@ def compute_quotient_cost(graph,trees,node,weights):
         distances.append(pair)
 
     # sort distances from node to all trees and then take subsets of trees
-    distances.sort(key=lambda x:x['distance'])
+    distances.sort(key=itemgetter('distance'))
 
     # compute min cost node spider ratio - consider subsets of atleast size 2
     subset = list()
