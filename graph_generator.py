@@ -21,11 +21,12 @@ def generate_multi_level_graph(n,w_min,w_max,levels,graph_type,params):
     terminals = list(graph.nodes)
     for i in range(levels):
         num_n = int(num_nodes/(i+2))
-        print('Level '+str(i)+' has '+str(num_n)+' terminals')
         terminals = random.sample(terminals, num_n)
         terminals.sort()
         terminal_sets.append(terminals)
     terminal_sets.reverse()
+    for i in range(levels):
+        print('Level '+str(i)+' has '+str(len(terminal_sets[i]))+' terminals')
     return graph,terminal_sets
 
 

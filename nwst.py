@@ -58,7 +58,7 @@ def get_node_tree_distance(graph,tree,node,weights):
     :return: Get min distance between node and any node in tree along with the path
     """
     global di_graph,all_predecessors,all_paths
-    tree_nodes = list(tree.nodes)
+    tree_nodes = tree.nodes()
     min_cost = float("inf")
     min_path = None
 
@@ -76,6 +76,8 @@ def get_node_tree_distance(graph,tree,node,weights):
         path2 = all_paths[tree_node][node]
         cost1 = get_path_cost(graph,path1,node,tree_node,weights)
         cost2 = get_path_cost(graph,path2,tree_node,node,weights)
+        # cost1 =  all_distances[node][tree_node]
+        # cost2 = all_distances[tree_node][node]
         if cost1 < cost2:
             cost = cost1
             path = path1
@@ -119,14 +121,18 @@ def compute_quotient_cost(graph,trees,node,weights):
     min_subset = list(subset)
     i = 2
     remaining_trees = list()
+    tree_distance = list()
+    tree_distance.append(distances[0]['distance'])
+    for j in range(1,len(trees)):
+        tree_distance.append(tree_distance[j-1] + distances[j]['distance'])
     for k in range(2,len(trees)):
         remaining_trees.append(distances[k]['tree'])
     while i < len(trees):
         subset.append(distances[i]['tree'])
-        tree_distance = 0
-        for j in range(0,i+1):
-            tree_distance = tree_distance + distances[j]['distance']
-        spider_ratio = (weights[node] + tree_distance)/(i+1)
+        #tree_distance = 0
+        # for j in range(0,i+1):
+        #     tree_distance = tree_distance + distances[j]['distance']
+        spider_ratio = (weights[node] + tree_distance[i])/(i+1)
         if spider_ratio <= min_spider_ratio:
             min_spider_ratio = spider_ratio
             min_subset = list(subset)
@@ -216,6 +222,13 @@ def preprocess_graph(graph,weights):
     # all_distances = dict(all_distances)
     start = time.time()
     all_paths = sp.johnson(di_graph, weight='weight')
+    nodes = list(graph.nodes)
+    all_distances = dict()
+    # for node1 in nodes:
+    #     for node2 in nodes:
+    #             if node1 not in all_distances:
+    #                 all_distances[node1] = dict()
+    #             all_distances[node1][node2] = get_path_cost(graph,all_paths[node1][node2],node1,node2,weights)
     end = time.time()
 
     elapsed = end - start

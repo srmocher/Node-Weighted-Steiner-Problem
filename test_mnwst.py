@@ -11,7 +11,7 @@ params = dict()
 # params['tries']=100
 params['m'] = 3
 levels = 3
-ml_graph, terminal_sets = gg.generate_multi_level_graph(n=1000,w_min=2,w_max=10,levels=levels,graph_type="barabasi-albert",params=params)
+ml_graph, terminal_sets = gg.generate_multi_level_graph(n=3000,w_min=2,w_max=10,levels=levels,graph_type="barabasi-albert",params=params)
 gg.write_to_file(ml_graph,terminal_sets,levels,"test.txt")
 multi_level_instance = mnwst.MultiLevelGraph(ml_graph,levels=levels,terminal_sets=terminal_sets)
 multi_level_instance.approximate_steiner_top_down()
