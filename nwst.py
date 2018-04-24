@@ -193,15 +193,7 @@ def merge_node_trees(graph,node,subset,remaining_trees,weights):
         for curr_edge in list(tree.edges):
             merged_tree.add_edge(curr_edge[0],curr_edge[1])
 
-    # Remove any cycles created by merging trees into one
-    cycle_exists = True
-    while cycle_exists:
-        try:
-             cycle = alg.find_cycle(merged_tree)
-             edge = cycle[0]
-             merged_tree.remove_edge(edge[0],edge[1])
-        except:
-            cycle_exists = False
+
 
     merged_trees.append(merged_tree)
     for tree in remaining_trees:
@@ -266,6 +258,15 @@ def approximate_steiner(graph,terminals,weights):
         #         pass
 
     steiner_tree = trees[0]
+    # Remove any cycles created by merging trees into one
+    cycle_exists = True
+    while cycle_exists:
+        try:
+            cycle = alg.find_cycle(steiner_tree)
+            edge = cycle[0]
+            steiner_tree.remove_edge(edge[0], edge[1])
+        except:
+            cycle_exists = False
     steiner_cost = 0
     #weights = nx.get_node_attributes(graph,'weight')
     for node in list(steiner_tree.nodes):
