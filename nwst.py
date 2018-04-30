@@ -116,15 +116,11 @@ def compute_quotient_cost(graph,trees,node,weights):
     subset.append(distances[1]['tree'])
 
     #weights = nx.get_node_attributes(graph,'weight')
-
-    min_spider_ratio = (weights[node] + distances[0]['distance'] + distances[1]['distance'])/2
+    tree_distances = distances[0]['distance'] + distances[1]['distance']
+    min_spider_ratio = (weights[node] + tree_distances)/2
     min_subset = list(subset)
     i = 2
     remaining_trees = list()
-    tree_distance = list()
-    tree_distance.append(distances[0]['distance'])
-    for j in range(1,len(trees)):
-        tree_distance.append(tree_distance[j-1] + distances[j]['distance'])
     for k in range(2,len(trees)):
         remaining_trees.append(distances[k]['tree'])
     while i < len(trees):
@@ -132,7 +128,8 @@ def compute_quotient_cost(graph,trees,node,weights):
         #tree_distance = 0
         # for j in range(0,i+1):
         #     tree_distance = tree_distance + distances[j]['distance']
-        spider_ratio = (weights[node] + tree_distance[i])/(i+1)
+        tree_distances = tree_distances + distances[i]['distance']
+        spider_ratio = (weights[node] + tree_distances)/(i+1)
         if spider_ratio <= min_spider_ratio:
             min_spider_ratio = spider_ratio
             min_subset = list(subset)

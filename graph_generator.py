@@ -11,7 +11,7 @@ def generate_multi_level_graph(n,w_min,w_max,levels,graph_type,params):
         graph = nx.erdos_renyi_graph(n,params['prob'],params['seed'])
     elif graph_type == "barabasi-albert":
         graph = nx.barabasi_albert_graph(n,params['m'])
-
+        
     terminal_sets = list()
     num_nodes = len(list(graph.nodes))
     num_edges = len(list(graph.edges))
@@ -20,7 +20,7 @@ def generate_multi_level_graph(n,w_min,w_max,levels,graph_type,params):
         graph.nodes[node]['weight'] = random.randint(w_min,w_max)
     terminals = list(graph.nodes)
     for i in range(levels):
-        num_n = int(num_nodes/(i+2))
+        num_n = int((num_nodes*0.2)/(i+2))
         terminals = random.sample(terminals, num_n)
         terminals.sort()
         terminal_sets.append(terminals)
