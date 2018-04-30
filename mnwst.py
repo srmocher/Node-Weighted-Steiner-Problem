@@ -21,24 +21,41 @@ class MultiLevelGraph:
             for node in list(steiner_tree.nodes):
                 cost = cost + self.weights[node]
             print('Cost is '+str(cost))
-            # for terminal in self.terminal_sets[i]:
-            #     if terminal not in steiner_tree.nodes:
-            #         print('Fail')
             self.steiner_trees.insert(i, steiner_tree)
             self.steiner_costs.insert(i, steiner_cost)
 
     def approximate_steiner_bottom_up(self):
-        for i in range(self.levels-1,-1,-1):
-            weights = self.get_level_weights(i)
-            print('Finding NWST for level ' + str(i))
-            steiner_tree, steiner_cost = nwst.approximate_steiner(self.graph, self.terminal_sets[i], weights)
-            print('Cost is ' + str(steiner_cost))
-            # for terminal in self.terminal_sets[i]:
-            #     if terminal not in steiner_tree.nodes:
-            #         print('Fail')
-            self.steiner_trees.insert(i, steiner_tree)
-            self.steiner_costs.insert(i, steiner_cost)
+        print('Running heurisitc on bottom level')
+        weights = self.get_level_weights(self.levels-1)
+        steiner_tree,steiner_cost = nwst.approximate_steiner(self.graph,self.terminal_sets[self.levels-1],weights)
+        self.steiner_trees.insert(self.levels-1,steiner_tree)
+        self.steiner_costs.insert(self.levels-1,steiner_cost)
+        cost = 0
+        for node in steiner_tree.nodes():
+            cost = cost + self.weights[node]
+        print('Cost of bottom level is '+str(cost))
+        for i in range(self.levels-2,-1,-1):
+            new_steiner_tree = steiner_tree.copy()
+            terminals = self.terminal_sets[i]
+            for edge in steiner_tree.edges():
+                if edge[0] not in terminals and edge[1] not in terminals:
+                    new_steiner_tree.remove_edge(edge[0],edge[1])
+                    if edge[0] in new_steiner_tree.nodes() and new_steiner_tree.degree[edge[0]] == 0:
+                        new_steiner_tree.remove_node(edge[0])
+                    if edge[1] in new_steiner_tree.nodes() and new_steiner_tree.degree[edge[1]] == 0:
+                        new_steiner_tree.remove_node(edge[1])
+            for terminal in terminals:
+                if terminal not in steiner_tree.nodes():
+                    print("FAiled not a")
 
+            steiner_tree = new_steiner_tree.copy()
+            self.steiner_trees.insert(i,steiner_tree)
+            cost = 0
+            for node in steiner_tree.nodes():
+                cost = cost + self.weights[node]
+            self.steiner_costs.insert(i,cost)
+            print('Cost of level '+str(i)+' is '+str(cost))
+        return self.steiner_trees,self.steiner_costs
     def get_level_weights(self,level):
         terminals = self.terminal_sets[level]
         nodes = list(self.graph.nodes)
