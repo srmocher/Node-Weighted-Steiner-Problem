@@ -16,6 +16,10 @@ class MultiLevelGraph:
         for i in range(self.levels):
             weights = self.get_level_weights(i)
             print('Finding NWST for level '+str(i))
+            if i > 0:
+                prev_level_nodes = self.steiner_trees[i-1].nodes()
+                for n in prev_level_nodes:
+                    weights[n] = 0
             steiner_tree,steiner_cost = nwst.approximate_steiner(self.graph,self.terminal_sets[i],weights)
             cost = 0
             for node in list(steiner_tree.nodes):
