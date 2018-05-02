@@ -73,3 +73,24 @@ class MultiLevelGraph:
 
     def get_steiner_trees(self):
         return self.steiner_trees,self.steiner_costs
+
+
+def read_graph(file_name):
+    graph = nx.Graph()
+    with open(file_name,'r') as f:
+        num_nodes = int(f.readline())
+        for i in range(1,num_nodes+1):
+            graph.add_node(i,weight=int(f.readline()))
+        num_edges = int(f.readline())
+        for i in range(num_edges):
+            edge = f.readline().split()
+            graph.add_edge(int(edge[0]),int(edge[1]))
+        num_layers = int(f.readline())
+        terminal_sets = list()
+        for i in range(num_layers):
+            terms = f.readline().split()
+            terminals = list()
+            for j in range(len(terms)):
+                terminals.append(int(terms[j]))
+            terminal_sets.append(terminals)
+    return graph,terminal_sets
