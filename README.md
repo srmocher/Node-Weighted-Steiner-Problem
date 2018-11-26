@@ -1,4 +1,4 @@
-# CSC620-Steiner
+# Multi-level Node Weighted Steiner Tree problem
 Multi-level Node weighted Steiner trees - implementation of heuristics to compute them. The dependencies to run the code are Python 2.7/NetworkX/Matplotlib/PuLP.
 
 ## 1. A logarithmic bound heuristic (H3)
